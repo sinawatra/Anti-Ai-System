@@ -1,0 +1,27 @@
+echo "# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large binary files
+*.pyd
+*.dll
+*.lib
+*.so
+*.dylib
+
+# Specific large packages
+**/tensorflow/
+**/torch/
+**/cv2/
+**/clang/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/" > .gitignore
