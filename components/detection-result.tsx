@@ -7,30 +7,98 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CheckCircle, AlertCircle, Clock, Info, Leaf, Camera, Palette, MapPin } from "lucide-react"
+import {
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Info,
+  Leaf,
+  Camera,
+  Palette,
+  MapPin,
+  Sparkles,
+  Wand2,
+  Brush,
+  Aperture,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DetectionResultProps {
   isReal: boolean
   confidence: number
   processingTime: number
-  analysisDetails: {
-    detectedArtifacts: string[]
-    naturalElements: string[]
-    detectedSubject?: string | null
-    humanDetected?: boolean
-    realWorldIndicators?: string[]
-    reason?: string
-    brandDetected?: string[]
-    landscapeFeatures?: string[]
+  reason: string
+  indicators: {
+    natural?: string[]
+    artificial?: string[]
   }
+  brandDetected?: string[]
+  landscapeFeatures?: string[]
 }
 
-export default function DetectionResult({ isReal, confidence, processingTime, analysisDetails }: DetectionResultProps) {
+export default function DetectionResult({
+  isReal,
+  confidence,
+  processingTime,
+  reason,
+  indicators = { natural: [], artificial: [] }, // Add a default empty object
+  brandDetected = [],
+  landscapeFeatures = [],
+}: DetectionResultProps) {
+  // Make sure indicators always has natural and artificial properties
+  const safeIndicators = {
+    natural: indicators?.natural || [],
+    artificial: indicators?.artificial || [],
+  }
+
   const [activeTab, setActiveTab] = useState("overview")
 
   // Format confidence to 2 decimal places
   const formattedConfidence = confidence.toFixed(2)
+
+  // Determine if this is a high confidence result
+  const isHighConfidence = confidence > 85
+
+  // Group AI indicators by category for better organization
+  const groupedArtificialIndicators = {
+    style: [] as string[],
+    color: [] as string[],
+    anatomy: [] as string[],
+    technical: [] as string[],
+    other: [] as string[],
+  }
+
+  // Categorize artificial indicators
+  safeIndicators.artificial.forEach((indicator) => {
+    const lowerIndicator = indicator.toLowerCase()
+    if (lowerIndicator.includes("style") || lowerIndicator.includes("anime") || lowerIndicator.includes("art")) {
+      groupedArtificialIndicators.style.push(indicator)
+    } else if (
+      lowerIndicator.includes("color") ||
+      lowerIndicator.includes("neon") ||
+      lowerIndicator.includes("rainbow") ||
+      lowerIndicator.includes("glow")
+    ) {
+      groupedArtificialIndicators.color.push(indicator)
+    } else if (
+      lowerIndicator.includes("face") ||
+      lowerIndicator.includes("eye") ||
+      lowerIndicator.includes("skin") ||
+      lowerIndicator.includes("hair") ||
+      lowerIndicator.includes("ear")
+    ) {
+      groupedArtificialIndicators.anatomy.push(indicator)
+    } else if (
+      lowerIndicator.includes("pattern") ||
+      lowerIndicator.includes("texture") ||
+      lowerIndicator.includes("edge") ||
+      lowerIndicator.includes("noise")
+    ) {
+      groupedArtificialIndicators.technical.push(indicator)
+    } else {
+      groupedArtificialIndicators.other.push(indicator)
+    }
+  })
 
   return (
     <Card className="w-full">
@@ -80,27 +148,54 @@ export default function DetectionResult({ isReal, confidence, processingTime, an
               />
             </div>
 
-            {analysisDetails.reason && (
+            {reason && (
               <div className="mt-4 p-3 bg-slate-50 rounded-md border border-slate-200">
                 <div className="flex items-start gap-2">
                   <Info className="h-4 w-4 text-slate-500 mt-0.5" />
                   <div>
                     <h4 className="text-sm font-medium mb-1">Detection Reason</h4>
-                    <p className="text-sm text-slate-600">{analysisDetails.reason}</p>
+                    <p className="text-sm text-slate-600">{reason}</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Brand detection section */}
-            {analysisDetails.brandDetected && analysisDetails.brandDetected.length > 0 && (
+            {/* AI Generated Indicators - Only show if AI Generated */}
+            {!isReal && safeIndicators.artificial.length > 0 && (
+              <div className="mt-4 p-3 bg-red-50 rounded-md border border-red-200">
+                <h4 className="text-sm font-medium mb-2 text-red-800 flex items-center gap-2">
+                  <Wand2 className="h-4 w-4" />
+                  AI Indicators
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {safeIndicators.artificial.slice(0, isHighConfidence ? 5 : 3).map((artifact, i) => (
+                    <Badge key={i} variant="outline" className="bg-red-100 text-red-700 border-red-200">
+                      {artifact}
+                    </Badge>
+                  ))}
+                  {safeIndicators.artificial.length > (isHighConfidence ? 5 : 3) && (
+                    <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">
+                      +{safeIndicators.artificial.length - (isHighConfidence ? 5 : 3)} more
+                    </Badge>
+                  )}
+                </div>
+                {isHighConfidence && (
+                  <p className="text-xs text-red-700 mt-2">
+                    High confidence detection based on multiple AI characteristics
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Brand detection section - Only show if Likely Real */}
+            {isReal && brandDetected.length > 0 && (
               <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-200">
                 <h4 className="text-sm font-medium mb-2 text-green-800 flex items-center gap-2">
                   <Camera className="h-4 w-4" />
                   Brand Detected
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {analysisDetails.brandDetected.map((brand, i) => (
+                  {brandDetected.map((brand, i) => (
                     <Badge key={i} variant="outline" className="bg-green-100 text-green-700 border-green-200">
                       {brand}
                     </Badge>
@@ -112,22 +207,22 @@ export default function DetectionResult({ isReal, confidence, processingTime, an
               </div>
             )}
 
-            {/* Landscape features section */}
-            {analysisDetails.landscapeFeatures && analysisDetails.landscapeFeatures.length > 0 && (
+            {/* Landscape features section - Only show if Likely Real */}
+            {isReal && landscapeFeatures.length > 0 && (
               <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-200">
                 <h4 className="text-sm font-medium mb-2 text-green-800 flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
                   Natural Landscape Features
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {analysisDetails.landscapeFeatures.slice(0, 3).map((feature, i) => (
+                  {landscapeFeatures.slice(0, 3).map((feature, i) => (
                     <Badge key={i} variant="outline" className="bg-green-100 text-green-700 border-green-200">
                       {feature}
                     </Badge>
                   ))}
-                  {analysisDetails.landscapeFeatures.length > 3 && (
+                  {landscapeFeatures.length > 3 && (
                     <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                      +{analysisDetails.landscapeFeatures.length - 3} more
+                      +{landscapeFeatures.length - 3} more
                     </Badge>
                   )}
                 </div>
@@ -137,46 +232,22 @@ export default function DetectionResult({ isReal, confidence, processingTime, an
               </div>
             )}
 
-            {analysisDetails.detectedSubject && (
-              <div className="mt-4 flex items-center gap-2">
-                <Leaf className="h-4 w-4 text-green-600" />
-                <div>
-                  <h4 className="text-sm font-medium">Detected Subject</h4>
-                  <p className="text-sm text-slate-600">{analysisDetails.detectedSubject}</p>
-                </div>
-              </div>
-            )}
-
-            {isReal && analysisDetails.naturalElements && analysisDetails.naturalElements.length > 0 && (
+            {/* Natural Characteristics - Only show if Likely Real */}
+            {isReal && safeIndicators.natural.length > 0 && (
               <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-200">
-                <h4 className="text-sm font-medium mb-2 text-green-800">Natural Characteristics</h4>
+                <h4 className="text-sm font-medium mb-2 text-green-800 flex items-center gap-2">
+                  <Leaf className="h-4 w-4" />
+                  Natural Characteristics
+                </h4>
                 <div className="flex flex-wrap gap-2">
-                  {analysisDetails.naturalElements.slice(0, 3).map((element, i) => (
+                  {safeIndicators.natural.slice(0, 3).map((element, i) => (
                     <Badge key={i} variant="outline" className="bg-green-100 text-green-700 border-green-200">
                       {element}
                     </Badge>
                   ))}
-                  {analysisDetails.naturalElements.length > 3 && (
+                  {safeIndicators.natural.length > 3 && (
                     <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                      +{analysisDetails.naturalElements.length - 3} more
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {!isReal && analysisDetails.detectedArtifacts && analysisDetails.detectedArtifacts.length > 0 && (
-              <div className="mt-4 p-3 bg-red-50 rounded-md border border-red-200">
-                <h4 className="text-sm font-medium mb-2 text-red-800">AI Indicators</h4>
-                <div className="flex flex-wrap gap-2">
-                  {analysisDetails.detectedArtifacts.slice(0, 3).map((artifact, i) => (
-                    <Badge key={i} variant="outline" className="bg-red-100 text-red-700 border-red-200">
-                      {artifact}
-                    </Badge>
-                  ))}
-                  {analysisDetails.detectedArtifacts.length > 3 && (
-                    <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">
-                      +{analysisDetails.detectedArtifacts.length - 3} more
+                      +{safeIndicators.natural.length - 3} more
                     </Badge>
                   )}
                 </div>
@@ -184,56 +255,135 @@ export default function DetectionResult({ isReal, confidence, processingTime, an
             )}
           </TabsContent>
           <TabsContent value="details" className="space-y-4 pt-4">
-            {analysisDetails.detectedArtifacts.length > 0 && !isReal && (
-              <div>
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Palette className="h-4 w-4 text-red-600" />
-                  Detected AI Artifacts
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {analysisDetails.detectedArtifacts.map((artifact, i) => (
-                    <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                      {artifact}
-                    </Badge>
-                  ))}
+            {/* AI Indicators by Category - Only show if AI Generated */}
+            {!isReal && (
+              <>
+                {groupedArtificialIndicators.style.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Brush className="h-4 w-4 text-red-600" />
+                      Artistic Style Indicators
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedArtificialIndicators.style.map((indicator, i) => (
+                        <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          {indicator}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {groupedArtificialIndicators.color.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-red-600" />
+                      Color Indicators
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedArtificialIndicators.color.map((indicator, i) => (
+                        <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          {indicator}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {groupedArtificialIndicators.anatomy.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-red-600" />
+                      Anatomical Indicators
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedArtificialIndicators.anatomy.map((indicator, i) => (
+                        <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          {indicator}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {groupedArtificialIndicators.technical.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Aperture className="h-4 w-4 text-red-600" />
+                      Technical Indicators
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedArtificialIndicators.technical.map((indicator, i) => (
+                        <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          {indicator}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {groupedArtificialIndicators.other.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Info className="h-4 w-4 text-red-600" />
+                      Other AI Indicators
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedArtificialIndicators.other.map((indicator, i) => (
+                        <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          {indicator}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-3 bg-red-50 rounded-md border border-red-200 mt-4">
+                  <p className="text-sm text-red-800 font-medium">AI Detection Confidence: {formattedConfidence}%</p>
+                  <p className="text-xs text-red-700 mt-1">
+                    {confidence > 90
+                      ? "Very high confidence in AI detection based on multiple strong indicators."
+                      : confidence > 80
+                        ? "High confidence in AI detection based on clear indicators."
+                        : confidence > 70
+                          ? "Moderate confidence in AI detection."
+                          : "Lower confidence detection - some AI characteristics detected."}
+                  </p>
                 </div>
-              </div>
+              </>
             )}
 
-            {analysisDetails.naturalElements.length > 0 && (
+            {/* Natural Elements - Only show if Likely Real */}
+            {isReal && safeIndicators.natural.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                   <Leaf className="h-4 w-4 text-green-600" />
                   Natural Elements
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {analysisDetails.naturalElements.map((element, i) => (
+                  {safeIndicators.natural.map((element, i) => (
                     <Badge key={i} variant="outline" className="bg-green-50 text-green-700 border-green-200">
                       {element}
                     </Badge>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {analysisDetails.realWorldIndicators && analysisDetails.realWorldIndicators.length > 0 && (
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-green-600" />
-                  Real World Indicators
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {analysisDetails.realWorldIndicators.map((indicator, i) => (
-                    <Badge key={i} variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {indicator}
-                    </Badge>
-                  ))}
+                <div className="p-3 bg-green-50 rounded-md border border-green-200 mt-4">
+                  <p className="text-sm text-green-800 font-medium">Natural Image Confidence: {formattedConfidence}%</p>
+                  <p className="text-xs text-green-700 mt-1">
+                    {confidence > 90
+                      ? "Very high confidence this is a natural image based on multiple indicators."
+                      : confidence > 80
+                        ? "High confidence this is a natural image."
+                        : confidence > 70
+                          ? "Moderate confidence this is a natural image."
+                          : "Lower confidence - some natural characteristics detected."}
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* Brand detection details */}
-            {analysisDetails.brandDetected && analysisDetails.brandDetected.length > 0 && (
+            {/* Brand detection details - Only show if Likely Real */}
+            {isReal && brandDetected.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                   <Camera className="h-4 w-4 text-green-600" />
@@ -241,19 +391,19 @@ export default function DetectionResult({ isReal, confidence, processingTime, an
                 </h4>
                 <div className="p-3 bg-green-50 rounded-md border border-green-200">
                   <p className="text-sm text-green-800">
-                    Detected {analysisDetails.brandDetected.length > 1 ? "brands" : "brand"}:{" "}
-                    <span className="font-medium">{analysisDetails.brandDetected.join(", ")}</span>
+                    Detected {brandDetected.length > 1 ? "brands" : "brand"}:{" "}
+                    <span className="font-medium">{brandDetected.join(", ")}</span>
                   </p>
                   <p className="text-xs text-green-700 mt-2">
-                    The presence of real-world brand logos like Samsung is a strong indicator of an authentic photograph
-                    rather than AI-generated content.
+                    The presence of real-world brand logos is a strong indicator of an authentic photograph rather than
+                    AI-generated content.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Landscape features details */}
-            {analysisDetails.landscapeFeatures && analysisDetails.landscapeFeatures.length > 0 && (
+            {/* Landscape features details - Only show if Likely Real */}
+            {isReal && landscapeFeatures.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-green-600" />
@@ -262,7 +412,7 @@ export default function DetectionResult({ isReal, confidence, processingTime, an
                 <div className="p-3 bg-green-50 rounded-md border border-green-200">
                   <p className="text-sm text-green-800 font-medium mb-1">Detected natural landscape features:</p>
                   <div className="flex flex-wrap gap-2">
-                    {analysisDetails.landscapeFeatures.map((feature, i) => (
+                    {landscapeFeatures.map((feature, i) => (
                       <Badge key={i} variant="outline" className="bg-green-100 text-green-700 border-green-200">
                         {feature}
                       </Badge>
