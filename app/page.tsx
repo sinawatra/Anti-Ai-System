@@ -2,13 +2,37 @@
 
 import type React from "react"
 
+<<<<<<< HEAD
+import { useState, useEffect } from "react"
+import { Upload, Info, AlertCircle, Layers } from "lucide-react"
+=======
 import { useState } from "react"
 import { Upload, Info, AlertCircle, BarChart3, Layers, Clock, Video } from "lucide-react"
+>>>>>>> main
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+<<<<<<< HEAD
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import DetectionResultComponent from "@/components/detection-result"
+
+type DetectionResultType = {
+  isReal: boolean
+  confidence: number
+  processingTime?: number
+  analysisDetails?: {
+    modelResults?: any[]
+    detectedArtifacts: string[]
+    naturalElements?: string[]
+    detectedSubject?: string
+    humanDetected?: boolean
+    realWorldIndicators?: string[]
+    reason?: string
+    brandDetected?: string[]
+    landscapeFeatures?: string[]
+=======
 import { Badge } from "@/components/ui/badge"
 
 type AnalysisDetail = {
@@ -37,6 +61,7 @@ type DetectionResult = {
     modelResults: AnalysisDetail[]
     ensembleMethod: string
     detectedArtifacts: string[]
+>>>>>>> main
   }
 }
 
@@ -44,15 +69,54 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+<<<<<<< HEAD
+  const [result, setResult] = useState<DetectionResultType | null>(null)
+  const [activeTab, setActiveTab] = useState("image")
+  const [advancedMode, setAdvancedMode] = useState(true)
+  const [progress, setProgress] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+  const [backendStatus, setBackendStatus] = useState<"unknown" | "online" | "offline">("unknown")
+
+  // Check backend status on component mount
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      try {
+        const response = await fetch("/api/detect", {
+          method: "GET",
+          cache: "no-store",
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setBackendStatus(data.status === "online" ? "online" : "offline")
+        } else {
+          setBackendStatus("offline")
+        }
+      } catch (error) {
+        console.error("Error checking backend status:", error)
+        setBackendStatus("offline")
+      }
+    }
+
+    checkBackendStatus()
+  }, [])
+=======
   const [result, setResult] = useState<DetectionResult | null>(null)
   const [activeTab, setActiveTab] = useState("image")
   const [advancedMode, setAdvancedMode] = useState(true)
   const [progress, setProgress] = useState(0)
+>>>>>>> main
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (!selectedFile) return
 
+<<<<<<< HEAD
+    // Clear previous errors and results
+    setError(null)
+    setResult(null)
+=======
+>>>>>>> main
     setFile(selectedFile)
 
     // Create preview for image files
@@ -100,6 +164,35 @@ export default function Home() {
 
     setIsLoading(true)
     setProgress(0)
+<<<<<<< HEAD
+    setError(null)
+    setResult(null)
+
+    // Create a more realistic progress simulation for 5-6 seconds
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          return 90 // Hold at 90% until actual completion
+        }
+
+        // Calculate appropriate increment for 5-6 second duration
+        // Aim to reach ~90% in about 5 seconds
+        const increment =
+          prev < 30
+            ? 5
+            : // Fast at start
+              prev < 60
+              ? 3
+              : // Medium in middle
+                prev < 80
+                ? 2
+                : // Slower approaching end
+                  1 // Very slow at end
+
+        return prev + increment
+      })
+    }, 250) // Update every 250ms for smoother progress
+=======
 
     // Create a progress simulation
     const progressInterval = setInterval(() => {
@@ -111,6 +204,7 @@ export default function Home() {
         return prev + 5
       })
     }, 500)
+>>>>>>> main
 
     try {
       const formData = new FormData()
@@ -130,10 +224,18 @@ export default function Home() {
       }
 
       const data = await response.json()
+<<<<<<< HEAD
+      console.log("Response data:", data)
+      setResult(data)
+    } catch (error) {
+      console.error("Error:", error)
+      setError(error instanceof Error ? error.message : "Failed to process file")
+=======
       setResult(data)
     } catch (error) {
       console.error("Error:", error)
       alert(`Error: ${error instanceof Error ? error.message : "Failed to process file"}`)
+>>>>>>> main
     } finally {
       setIsLoading(false)
     }
@@ -144,6 +246,18 @@ export default function Home() {
     setPreview(null)
     setResult(null)
     setProgress(0)
+<<<<<<< HEAD
+    setError(null)
+  }
+
+  return (
+    <main className="flex min-h-screen flex-col items-center p-4 md:p-24 bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-4xl w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2 dark:text-white">Enhanced DeepFake Detector</h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Upload an image or video to detect if it was generated by AI using advanced analysis
+=======
   }
 
   return (
@@ -153,6 +267,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold mb-2">Enhanced DeepFake Detector</h1>
           <p className="text-gray-600">
             Upload an image or video to detect if it was generated by AI using FaceForensics++ model
+>>>>>>> main
           </p>
           <div className="mt-4 flex justify-center">
             <Button
@@ -167,6 +282,19 @@ export default function Home() {
           </div>
         </div>
 
+<<<<<<< HEAD
+        {backendStatus === "offline" && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Backend Service Unavailable</AlertTitle>
+            <AlertDescription>
+              The detection service is currently offline. Please ensure the API route is working properly.
+            </AlertDescription>
+          </Alert>
+        )}
+
+=======
+>>>>>>> main
         <Tabs defaultValue="image" className="mb-8" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="image">Image Detection</TabsTrigger>
@@ -174,6 +302,20 @@ export default function Home() {
           </TabsList>
           <TabsContent value="image" className="mt-4">
             <Card className="p-6">
+<<<<<<< HEAD
+              <h2 className="text-xl font-semibold mb-4 dark:text-white">Upload an Image</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Our enhanced AI will analyze the image using multiple detection techniques.
+              </p>
+              {advancedMode && (
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mt-2">
+                  <h3 className="font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                    <Info className="h-4 w-4" />
+                    Advanced Detection Enabled
+                  </h3>
+                  <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+                    Using enhanced natural image recognition with advanced pattern analysis
+=======
               <h2 className="text-xl font-semibold mb-4">Upload an Image</h2>
               <p className="text-gray-600 mb-4">
                 Our enhanced AI will analyze the image using the FaceForensics++ model.
@@ -186,6 +328,7 @@ export default function Home() {
                   </h3>
                   <p className="text-sm text-blue-600 mt-1">
                     Using FaceForensics++ model with face detection and manipulation analysis
+>>>>>>> main
                   </p>
                 </div>
               )}
@@ -193,6 +336,19 @@ export default function Home() {
           </TabsContent>
           <TabsContent value="video" className="mt-4">
             <Card className="p-6">
+<<<<<<< HEAD
+              <h2 className="text-xl font-semibold mb-4 dark:text-white">Upload a Video</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Our AI will analyze frames of the video to detect deepfakes.
+              </p>
+              {advancedMode && (
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mt-2">
+                  <h3 className="font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                    <Info className="h-4 w-4" />
+                    Advanced Video Analysis Enabled
+                  </h3>
+                  <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+=======
               <h2 className="text-xl font-semibold mb-4">Upload a Video</h2>
               <p className="text-gray-600 mb-4">Our AI will analyze frames of the video to detect deepfakes.</p>
               {advancedMode && (
@@ -202,6 +358,7 @@ export default function Home() {
                     Advanced Video Analysis Enabled
                   </h3>
                   <p className="text-sm text-blue-600 mt-1">
+>>>>>>> main
                     Using temporal consistency analysis and frame-by-frame deepfake detection
                   </p>
                 </div>
@@ -210,6 +367,25 @@ export default function Home() {
           </TabsContent>
         </Tabs>
 
+<<<<<<< HEAD
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {!file && (
+            <div
+              className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+              onClick={() => document.getElementById("file-upload")?.click()}
+            >
+              <Upload className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Click to upload or drag and drop</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">
+=======
         <form onSubmit={handleSubmit} className="space-y-6">
           {!file && (
             <div
@@ -219,6 +395,7 @@ export default function Home() {
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
               <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
               <p className="text-xs text-gray-500">
+>>>>>>> main
                 {activeTab === "image" ? "PNG, JPG, WEBP up to 10MB" : "MP4, MOV up to 50MB"}
               </p>
               <input
@@ -235,12 +412,20 @@ export default function Home() {
           {preview && (
             <div className="mt-4 relative">
               <div className="flex justify-between items-center mb-2">
+<<<<<<< HEAD
+                <h3 className="font-medium dark:text-white">Preview</h3>
+=======
                 <h3 className="font-medium">Preview</h3>
+>>>>>>> main
                 <Button variant="ghost" size="sm" onClick={resetForm}>
                   Change file
                 </Button>
               </div>
+<<<<<<< HEAD
+              <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+=======
               <div className="rounded-lg overflow-hidden border border-gray-200">
+>>>>>>> main
                 <img
                   src={preview || "/placeholder.svg"}
                   alt="File preview"
@@ -248,7 +433,11 @@ export default function Home() {
                 />
               </div>
               <div className="mt-4">
+<<<<<<< HEAD
+                <Button type="submit" className="w-full" disabled={isLoading || backendStatus === "offline"}>
+=======
                 <Button type="submit" className="w-full" disabled={isLoading}>
+>>>>>>> main
                   {isLoading ? "Analyzing..." : "Detect Fake"}
                 </Button>
               </div>
@@ -258,14 +447,37 @@ export default function Home() {
 
         {isLoading && (
           <div className="mt-8 space-y-4">
+<<<<<<< HEAD
+            <p className="text-center font-medium dark:text-white">
+              {advancedMode ? "Running advanced image analysis..." : "Analyzing..."}
+=======
             <p className="text-center font-medium">
               {advancedMode ? "Running analysis with FaceForensics++..." : "Analyzing..."}
+>>>>>>> main
             </p>
             <Progress value={progress} className="h-2" />
           </div>
         )}
 
         {result && (
+<<<<<<< HEAD
+          <div className="mt-8">
+            <DetectionResultComponent
+              isReal={result.isReal}
+              confidence={result.confidence}
+              processingTime={result.processingTime || 0}
+              analysisDetails={{
+                detectedArtifacts: result.analysisDetails?.detectedArtifacts || [],
+                naturalElements: result.analysisDetails?.naturalElements || [],
+                detectedSubject: result.analysisDetails?.detectedSubject || null,
+                humanDetected: result.analysisDetails?.humanDetected || false,
+                realWorldIndicators: result.analysisDetails?.realWorldIndicators || [],
+                reason: result.analysisDetails?.reason || undefined,
+                brandDetected: result.analysisDetails?.brandDetected || [],
+                landscapeFeatures: result.analysisDetails?.landscapeFeatures || [],
+              }}
+            />
+=======
           <Card className="mt-8 p-6">
             <div className="flex items-center gap-4 mb-4">
               {result.isReal ? (
@@ -396,11 +608,29 @@ export default function Home() {
                 </ul>
               </div>
             )}
+>>>>>>> main
 
             <Accordion type="single" collapsible className="mt-6">
               <AccordionItem value="how-it-works">
                 <AccordionTrigger className="text-sm font-medium">How it works</AccordionTrigger>
                 <AccordionContent>
+<<<<<<< HEAD
+                  <div className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                    <p>This detector uses multiple advanced analysis techniques:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Enhanced natural image recognition for real photographs</li>
+                      <li>Advanced pattern analysis for AI-generated content</li>
+                      <li>Facial feature analysis for human subjects</li>
+                      <li>Color profile and texture consistency evaluation</li>
+                      <li>Natural subject recognition for animals, humans, and landscapes</li>
+                      <li>Metadata analysis for photographic indicators</li>
+                      <li>Brand logo detection for authentic photographs</li>
+                      <li>Natural landscape feature recognition</li>
+                    </ul>
+                    <p>
+                      The system combines these approaches to accurately distinguish between real images and
+                      AI-generated content with high confidence.
+=======
                   <div className="text-sm text-gray-600 space-y-2">
                     <p>This detector uses the FaceForensics++ model to analyze media:</p>
                     <ul className="list-disc pl-5 space-y-1">
@@ -412,12 +642,17 @@ export default function Home() {
                     <p>
                       The model has been trained on thousands of real and fake images to identify subtle patterns
                       indicative of AI manipulation.
+>>>>>>> main
                     </p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+<<<<<<< HEAD
+          </div>
+=======
           </Card>
+>>>>>>> main
         )}
       </div>
     </main>
